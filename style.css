@@ -7,6 +7,8 @@
   padding: 0;
 }
 
+[hidden] { display: none !important; }
+
 :root {
   --ink: #111217;
   --ink-soft: #343841;
@@ -367,7 +369,7 @@ h1 {
 
 .link-stack {
   display: grid;
-  grid-template-rows: repeat(6, minmax(0, 1fr));
+  grid-template-rows: repeat(7, minmax(0, 1fr));
   gap: 10px;
   height: 100%;
   min-height: 0;
@@ -395,6 +397,7 @@ h1 {
 .link-card:nth-of-type(4) { animation-delay: 340ms; }
 .link-card:nth-of-type(5) { animation-delay: 400ms; }
 .link-card:nth-of-type(6) { animation-delay: 460ms; }
+.link-card:nth-of-type(7) { animation-delay: 520ms; }
 
 .link-card::after {
   content: "";
@@ -421,6 +424,10 @@ h1 {
 .link-pink { background: #ffeaf2; }
 .link-cyan { background: #e9f7ff; }
 .link-spotify { background: #eafff3; }
+.link-sponsor { background: #fff0f5; }
+
+.link-sponsor .link-icon { color: var(--pink); }
+.link-sponsor .arrow { color: var(--pink); border-color: var(--pink); }
 
 .link-card.is-live {
   animation: live-card 2.8s ease-in-out infinite;
@@ -624,6 +631,7 @@ h1 {
 
   .profile-shell {
     display: grid;
+    grid-template-columns: 1fr;
     grid-template-rows: 188px minmax(0, 1fr);
     gap: 8px;
     width: 100%;
@@ -653,7 +661,7 @@ h1 {
 
   .link-stack {
     display: grid;
-    grid-template-rows: repeat(6, minmax(0, 1fr));
+    grid-template-rows: repeat(7, minmax(0, 1fr));
     gap: 6px;
     width: 100%;
     min-height: 0;
@@ -780,16 +788,20 @@ h1 {
 
 /* ── Booking dialog ── */
 .booking-dialog {
-  width: min(820px, calc(100vw - 32px));
-  max-height: calc(100svh - 48px);
+  width: min(820px, calc(100vw - 24px));
+  max-height: min(92svh, 680px);
+  margin: auto;
   overflow-y: auto;
   background: var(--panel);
   border: 2px solid var(--ink);
   border-radius: var(--radius);
   box-shadow: 8px 8px 0 var(--ink);
   padding: 0;
-  display: flex;
   flex-direction: column;
+}
+
+.booking-dialog[open] {
+  display: flex;
 }
 
 .booking-dialog::backdrop {

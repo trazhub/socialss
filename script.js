@@ -284,15 +284,19 @@ function openBookingModal() {
   pickedTime = null;
   bookingBody.hidden    = false;
   bookingSuccess.hidden = true;
-  bookingDialog.showModal();
   renderCalendar();
   renderSlots();
   updateSelection();
+  try {
+    bookingDialog.showModal();
+  } catch {
+    bookingDialog.setAttribute("open", "");
+  }
   document.getElementById("bookName")?.focus();
 }
 
 function closeBookingModal() {
-  bookingDialog.close();
+  bookingDialog?.close();
 }
 
 function renderCalendar() {
@@ -433,9 +437,14 @@ function handleBookingSubmit() {
 }
 
 document.getElementById("workWithMe")?.addEventListener("click", openBookingModal);
-document.getElementById("bookingClose")?.addEventListener("click", closeBookingModal);
 document.getElementById("bookSubmit")?.addEventListener("click", handleBookingSubmit);
-document.getElementById("bookingSuccessClose")?.addEventListener("click", closeBookingModal);
+
+["bookingClose", "bookingSuccessClose"].forEach((id) => {
+  document.getElementById(id)?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeBookingModal();
+  });
+});
 
 document.getElementById("calPrev")?.addEventListener("click", () => {
   calMonth--;
@@ -450,6 +459,11 @@ document.getElementById("calNext")?.addEventListener("click", () => {
 
 bookingDialog?.addEventListener("click", (e) => {
   if (e.target === bookingDialog) closeBookingModal();
+});
+
+bookingDialog?.addEventListener("close", () => {
+  if (bookingBody) bookingBody.hidden = false;
+  if (bookingSuccess) bookingSuccess.hidden = true;
 });
 // Escape is handled natively by <dialog>
 
