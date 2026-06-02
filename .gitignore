@@ -16,6 +16,9 @@ db/
 uploads/
 page-checks/
 
+# Claude Code internal
+.claude/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
