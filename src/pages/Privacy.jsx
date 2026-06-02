@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-const CONTACT_EMAIL = "privacy@link.trazz.art";
+const CONTACT_EMAIL = "privacy@traz.qzz.io";
 
 function PolicySection({ title, children }) {
   return (
