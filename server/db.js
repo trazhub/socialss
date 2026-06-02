@@ -57,4 +57,15 @@ if (!profileColumns.some((column) => column.name === "appearance")) {
   db.exec("ALTER TABLE profiles ADD COLUMN appearance TEXT DEFAULT '{}'");
 }
 
+const userColumns = db.prepare("PRAGMA table_info(users)").all();
+if (!userColumns.some(c => c.name === "token_version")) {
+  db.exec("ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0");
+}
+if (!userColumns.some(c => c.name === "failed_login_attempts")) {
+  db.exec("ALTER TABLE users ADD COLUMN failed_login_attempts INTEGER NOT NULL DEFAULT 0");
+}
+if (!userColumns.some(c => c.name === "locked_until")) {
+  db.exec("ALTER TABLE users ADD COLUMN locked_until TEXT DEFAULT NULL");
+}
+
 export default db;

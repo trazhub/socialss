@@ -28,7 +28,7 @@ export function extractSessionToken(req) {
 
 export function signSessionToken(user) {
   return jwt.sign(
-    { id: user.id, username: user.username },
+    { id: user.id, username: user.username, tv: user.token_version ?? 0 },
     process.env.JWT_SECRET,
     { algorithm: "HS256", expiresIn: "30d" },
   );

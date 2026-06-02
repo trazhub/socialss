@@ -130,16 +130,33 @@ function readPublicProfile(userId) {
     .get(userId);
 }
 
-function bumpDailyStat(userId, field) {
-  if (!["views", "link_clicks", "social_clicks"].includes(field)) return;
+const stmtBumpView = db.prepare(`
+  INSERT INTO profile_daily_stats (user_id, day, views)
+  VALUES (?, date('now'), 1)
+  ON CONFLICT(user_id, day)
+  DO UPDATE SET views = views + 1
+`);
+const stmtBumpLinkClick = db.prepare(`
+  INSERT INTO profile_daily_stats (user_id, day, link_clicks)
+  VALUES (?, date('now'), 1)
+  ON CONFLICT(user_id, day)
+  DO UPDATE SET link_clicks = link_clicks + 1
+`);
+const stmtBumpSocialClick = db.prepare(`
+  INSERT INTO profile_daily_stats (user_id, day, social_clicks)
+  VALUES (?, date('now'), 1)
+  ON CONFLICT(user_id, day)
+  DO UPDATE SET social_clicks = social_clicks + 1
+`);
 
-  db.prepare(`
-    INSERT INTO profile_daily_stats (user_id, day, ${field})
-    VALUES (?, date('now'), 1)
-    ON CONFLICT(user_id, day)
-    DO UPDATE SET ${field} = ${field} + 1
-  `).run(userId);
+function bumpDailyStat(userId, field) {
+  if (field === "views") return stmtBumpView.run(userId);
+  if (field === "link_clicks") return stmtBumpLinkClick.run(userId);
+  if (field === "social_clicks") return stmtBumpSocialClick.run(userId);
 }
+
+const VIEW_CACHE = new Map(); // key: `${userId}:${ip}` -> expiry timestamp
+const VIEW_COOLDOWN_MS = 30 * 60 * 1000;
 
 router.get("/me", requireAuth, (req, res) => {
   const profile = readPrivateProfile(req.user.id);
@@ -278,7 +295,18 @@ router.get("/:username", (req, res) => {
   const user = db.prepare("SELECT id FROM users WHERE username = ?").get(username);
   if (!user) return res.status(404).json({ error: "Profile not found." });
 
-  bumpDailyStat(user.id, "views");
+  const ip = req.ip || req.socket?.remoteAddress || "anon";
+  const viewKey = `${user.id}:${ip}`;
+  const now = Date.now();
+  if (!VIEW_CACHE.has(viewKey) || VIEW_CACHE.get(viewKey) < now) {
+    VIEW_CACHE.set(viewKey, now + VIEW_COOLDOWN_MS);
+    bumpDailyStat(user.id, "views");
+  }
+  // Prune stale entries occasionally
+  if (VIEW_CACHE.size > 10000) {
+    for (const [k, exp] of VIEW_CACHE) if (exp < now) VIEW_CACHE.delete(k);
+  }
+
   const profile = readPublicProfile(user.id);
   res.json({ profile: parseProfile(profile) });
 });

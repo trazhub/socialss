@@ -25,14 +25,20 @@ async function saveLocally(buffer, filename) {
   return `/uploads/avatars/${safeName}`;
 }
 
-export const r2 = new S3Client({
-  region: "auto",
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-  },
-});
+let _r2 = null;
+function getR2Client() {
+  if (!_r2) {
+    _r2 = new S3Client({
+      region: "auto",
+      endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      credentials: {
+        accessKeyId: process.env.R2_ACCESS_KEY_ID,
+        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+      },
+    });
+  }
+  return _r2;
+}
 
 export async function uploadToR2(buffer, filename, mimeType) {
   if (!r2Configured) {
@@ -40,7 +46,7 @@ export async function uploadToR2(buffer, filename, mimeType) {
   }
 
   try {
-    await r2.send(new PutObjectCommand({
+    await getR2Client().send(new PutObjectCommand({
       Bucket: process.env.R2_BUCKET,
       Key: filename,
       Body: buffer,
@@ -73,7 +79,7 @@ export async function deleteFromR2(url) {
   try {
     const key = url.replace(`${process.env.R2_PUBLIC_URL}/`, "");
     if (!key || key === url) return; // not an R2 URL
-    await r2.send(new DeleteObjectCommand({ Bucket: process.env.R2_BUCKET, Key: key }));
+    await getR2Client().send(new DeleteObjectCommand({ Bucket: process.env.R2_BUCKET, Key: key }));
   } catch {
     // best effort
   }

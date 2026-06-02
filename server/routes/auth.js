@@ -63,10 +63,27 @@ router.post("/login", async (req, res) => {
   if (!email || !password) return res.status(400).json({ error: "Email and password are required." });
 
   const user = db.prepare("SELECT * FROM users WHERE email = ?").get(email.toLowerCase().trim());
+
+  if (user?.locked_until && new Date(user.locked_until) > new Date()) {
+    return res.status(429).json({ error: "Account temporarily locked. Try again later." });
+  }
+
   const hash = user?.password_hash ?? "$2b$12$invalidhashpaddingtopreventinitiming";
   const ok   = await bcrypt.compare(password, hash);
 
-  if (!user || !ok) return res.status(401).json({ error: "Invalid email or password." });
+  if (!user || !ok) {
+    if (user) {
+      const newAttempts = (user.failed_login_attempts ?? 0) + 1;
+      if (newAttempts >= 10) {
+        db.prepare("UPDATE users SET failed_login_attempts = ?, locked_until = datetime('now', '+15 minutes') WHERE id = ?").run(newAttempts, user.id);
+      } else {
+        db.prepare("UPDATE users SET failed_login_attempts = ? WHERE id = ?").run(newAttempts, user.id);
+      }
+    }
+    return res.status(401).json({ error: "Invalid email or password." });
+  }
+
+  db.prepare("UPDATE users SET failed_login_attempts = 0, locked_until = NULL WHERE id = ?").run(user.id);
 
   const token = signSessionToken(user);
   setSessionCookie(res, token);
@@ -89,7 +106,8 @@ router.get("/me", (req, res) => {
   }
 });
 
-router.post("/logout", (_req, res) => {
+router.post("/logout", requireAuth, (_req, res) => {
+  db.prepare("UPDATE users SET token_version = token_version + 1 WHERE id = ?").run(_req.user.id);
   clearSessionCookie(res);
   res.json({ message: "Signed out." });
 });
@@ -110,6 +128,9 @@ router.put("/email", requireAuth, async (req, res) => {
 
   try {
     db.prepare("UPDATE users SET email = ? WHERE id = ?").run(cleanEmail, req.user.id);
+    db.prepare("UPDATE users SET token_version = token_version + 1 WHERE id = ?").run(req.user.id);
+    const freshUser = db.prepare("SELECT id, username, token_version FROM users WHERE id = ?").get(req.user.id);
+    setSessionCookie(res, signSessionToken(freshUser));
     res.json({ message: "Email updated." });
   } catch (err) {
     if (err.message?.includes("UNIQUE")) return res.status(409).json({ error: "That email is already in use." });
@@ -132,7 +153,8 @@ router.put("/password", requireAuth, async (req, res) => {
 
   const hash = await bcrypt.hash(new_password, 12);
   db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, req.user.id);
-  const freshUser = db.prepare("SELECT id, username FROM users WHERE id = ?").get(req.user.id);
+  db.prepare("UPDATE users SET token_version = token_version + 1 WHERE id = ?").run(req.user.id);
+  const freshUser = db.prepare("SELECT id, username, token_version FROM users WHERE id = ?").get(req.user.id);
   setSessionCookie(res, signSessionToken(freshUser));
   res.json({ message: "Password updated." });
 });
