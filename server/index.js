@@ -28,6 +28,7 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
 
 // Security headers
 app.use(helmet({
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
@@ -106,7 +107,7 @@ app.use("/api", apiLimiter);
 app.use("/api/profile/me/avatar", uploadLimiter);
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, env: isProd ? "production" : "development" });
+  res.json({ ok: true });
 });
 
 app.use("/api/auth", authRoutes);
