@@ -1,17 +1,75 @@
 [Unit]
 Description=TrazLinks web app
+Documentation=https://github.com/trazhub/socialss
 After=network.target
+Requires=network.target
 
 [Service]
 Type=simple
 User=trazlinks
 Group=trazlinks
-WorkingDirectory=/opt/trazlinks/builder-app
-EnvironmentFile=/opt/trazlinks/builder-app/.env
+WorkingDirectory=/opt/trazlinks
+EnvironmentFile=/opt/trazlinks/.env
 Environment=NODE_ENV=production
-ExecStart=/usr/bin/npm start
-Restart=always
+
+ExecStart=/usr/bin/node server/index.js
+
+Restart=on-failure
 RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+# ── Hardened sandbox ──────────────────────────────────────────────
+# Prevent privilege escalation
+NoNewPrivileges=true
+
+# Private /tmp — app cannot see other processes' temp files
+PrivateTmp=true
+
+# Mount /usr, /boot, /etc read-only
+ProtectSystem=strict
+
+# Allow writes only to these directories
+ReadWritePaths=/opt/trazlinks/db /opt/trazlinks/uploads
+
+# Hide /home, /root from the process
+ProtectHome=true
+
+# No access to kernel tunables
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+
+# Restrict to inet + unix sockets only
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+# Drop all capabilities — Node doesn't need any special kernel caps
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+# Prevent writing executable memory (blocks certain exploits)
+MemoryDenyWriteExecute=false
+# Note: set true only if your Node version doesn't use JIT (it does, so keep false)
+
+# Whitelist only necessary syscalls
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+# Prevent the process from gaining new capabilities via exec
+LockPersonality=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RemoveIPC=true
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=512
+
+# Logs go to journald
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=trazlinks
 
 [Install]
 WantedBy=multi-user.target

@@ -1,7 +1,7 @@
 # Deploying TrazLinks to a VPS with Cloudflare Tunnel
 
 This app should run on a VPS, then be published through Cloudflare Tunnel at
-`https://link.trazz.art`. It is not a Cloudflare Pages-only deployment because it
+`https://traz.qzz.io`. It is not a Cloudflare Pages-only deployment because it
 uses Express, SQLite, and the native `better-sqlite3` module.
 
 The Express server serves both the built React app and the `/api` on one local
@@ -125,7 +125,7 @@ Create a locally managed tunnel:
 ```bash
 cloudflared tunnel login
 cloudflared tunnel create trazlinks
-cloudflared tunnel route dns trazlinks link.trazz.art
+cloudflared tunnel route dns trazlinks traz.qzz.io
 cloudflared tunnel list
 ```
 
@@ -143,7 +143,7 @@ sudo chmod 600 /etc/cloudflared/$TUNNEL_ID.json
 sudo cat /etc/cloudflared/config.yml
 ```
 
-The config should route `link.trazz.art` to `http://127.0.0.1:3001`.
+The config should route `traz.qzz.io` to `http://127.0.0.1:3001`.
 
 Test the tunnel in the foreground:
 
@@ -154,7 +154,7 @@ sudo cloudflared --config /etc/cloudflared/config.yml tunnel run trazlinks
 In another terminal, check:
 
 ```bash
-curl https://link.trazz.art/api/health
+curl https://traz.qzz.io/api/health
 ```
 
 Stop the foreground tunnel with `Ctrl+C` after the HTTPS check passes.
@@ -175,7 +175,7 @@ systemctl status cloudflared
 journalctl -u trazlinks -n 100 --no-pager
 journalctl -u cloudflared -n 100 --no-pager
 cloudflared tunnel info trazlinks
-curl https://link.trazz.art/api/health
+curl https://traz.qzz.io/api/health
 ```
 
 ## 9. Firewall
@@ -189,7 +189,7 @@ sudo ufw enable
 sudo ufw status
 ```
 
-Cloudflare terminates HTTPS for `https://link.trazz.art` and forwards traffic
+Cloudflare terminates HTTPS for `https://traz.qzz.io` and forwards traffic
 through the outbound tunnel to `http://127.0.0.1:3001`.
 
 ## 10. R2 avatar storage, optional
