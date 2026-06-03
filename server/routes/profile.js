@@ -27,7 +27,7 @@ function parseProfile(row) {
     ...row,
     theme_mode: row.theme_mode === "dark" ? "dark" : "light",
     show_spotify_status: Boolean(row.show_spotify_status),
-    spotify_style: row.spotify_style || "card",
+    show_discord_card: row.show_discord_card !== 0,
     appearance: normalizeAppearance(row.appearance, row.theme_mode),
     socials: JSON.parse(row.socials || "{}"),
     links: JSON.parse(row.links || "[]"),
@@ -90,7 +90,7 @@ const ALLOWED_COLORS  = new Set(["green","blue","red","pink","cyan","yellow","pu
 const ALLOWED_THEME_IDS = new Set(["sunset", "midnight", "mint", "graphite"]);
 const ALLOWED_BACKGROUND_STYLES = new Set(["grid", "spotlight", "mesh", "minimal"]);
 const ALLOWED_CARD_STYLES = new Set(["soft", "outline", "glass"]);
-const ALLOWED_SPOTIFY_STYLES = new Set(["card", "minimal", "off"]);
+const ALLOWED_AVATAR_SHAPES = new Set(["circle", "rounded", "square"]);
 const DEFAULT_APPEARANCE = {
   theme_id: "sunset",
   background_style: "grid",
@@ -117,6 +117,7 @@ function normalizeAppearance(rawValue, themeMode = "light") {
     card_style: ALLOWED_CARD_STYLES.has(parsed?.card_style)
       ? parsed.card_style
       : DEFAULT_APPEARANCE.card_style,
+    avatar_shape: ALLOWED_AVATAR_SHAPES.has(parsed?.avatar_shape) ? parsed.avatar_shape : "circle",
   };
 }
 
@@ -128,7 +129,7 @@ function readPrivateProfile(userId) {
 
 function readPublicProfile(userId) {
   return db
-    .prepare("SELECT p.display_name, p.bio, p.avatar_url, p.discord_id, p.theme_mode, p.show_spotify_status, p.spotify_style, p.appearance, p.socials, p.links, p.updated_at, u.username FROM profiles p JOIN users u ON u.id = p.user_id WHERE p.user_id = ?")
+    .prepare("SELECT p.display_name, p.bio, p.avatar_url, p.discord_id, p.theme_mode, p.show_spotify_status, p.show_discord_card, p.appearance, p.socials, p.links, p.updated_at, u.username FROM profiles p JOIN users u ON u.id = p.user_id WHERE p.user_id = ?")
     .get(userId);
 }
 
@@ -201,12 +202,11 @@ router.get("/me/insights", requireAuth, (req, res) => {
 });
 
 router.put("/me", requireAuth, (req, res) => {
-  const { display_name, bio, discord_id, theme_mode, show_spotify_status, spotify_style, appearance, socials, links } = req.body ?? {};
+  const { display_name, bio, discord_id, theme_mode, show_spotify_status, show_discord_card, appearance, socials, links } = req.body ?? {};
 
   const cleanName    = sanitizeText(display_name, 60);
   const cleanBio     = sanitizeText(bio, 280);
   const cleanDiscord = sanitizeText(discord_id, 30).replace(/\D/g, "");
-  const cleanSpotifyStyle = ALLOWED_SPOTIFY_STYLES.has(spotify_style) ? spotify_style : "card";
 
   const cleanAppearance = normalizeAppearance(JSON.stringify(appearance || {}), theme_mode);
 
@@ -237,7 +237,7 @@ router.put("/me", requireAuth, (req, res) => {
   db.prepare(`
     UPDATE profiles SET
       display_name = ?, bio = ?, discord_id = ?,
-      theme_mode = ?, show_spotify_status = ?, spotify_style = ?, appearance = ?, socials = ?, links = ?, updated_at = datetime('now')
+      theme_mode = ?, show_spotify_status = ?, show_discord_card = ?, appearance = ?, socials = ?, links = ?, updated_at = datetime('now')
     WHERE user_id = ?
   `).run(
     cleanName,
@@ -245,7 +245,7 @@ router.put("/me", requireAuth, (req, res) => {
     cleanDiscord,
     cleanAppearance.theme_id === "midnight" || cleanAppearance.theme_id === "graphite" ? "dark" : "light",
     show_spotify_status ? 1 : 0,
-    cleanSpotifyStyle,
+    show_discord_card === false ? 0 : 1,
     JSON.stringify(cleanAppearance),
     JSON.stringify(cleanSocials),
     JSON.stringify(cleanLinks),
