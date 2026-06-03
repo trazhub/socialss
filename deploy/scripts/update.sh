@@ -12,11 +12,14 @@ cd "$APP_DIR"
 git fetch origin main
 git reset --hard origin/main
 
-echo "[update] Installing dependencies..."
-npm ci --omit=dev
+echo "[update] Installing dependencies (including dev for build)..."
+npm ci
 
 echo "[update] Building frontend..."
 npm run build
+
+echo "[update] Pruning dev dependencies..."
+npm prune --omit=dev
 
 echo "[update] Backing up database..."
 bash deploy/scripts/backup.sh
