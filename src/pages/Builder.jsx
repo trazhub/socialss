@@ -13,14 +13,19 @@ const BUILDER_TABS = [
   { id: "links", label: "Links" },
 ];
 const COLORS = [
-  { id: "green", hex: "#eafff3" },
-  { id: "blue", hex: "#eef7ff" },
-  { id: "red", hex: "#fff0e9" },
-  { id: "pink", hex: "#ffeaf2" },
-  { id: "cyan", hex: "#e9f7ff" },
-  { id: "yellow", hex: "#fffbe9" },
-  { id: "purple", hex: "#f3eeff" },
-  { id: "default", hex: "#fffdf7" },
+  { id: "green",   hex: "#22c55e" },
+  { id: "blue",    hex: "#3b82f6" },
+  { id: "red",     hex: "#ef4444" },
+  { id: "pink",    hex: "#f43f8e" },
+  { id: "cyan",    hex: "#06b6d4" },
+  { id: "yellow",  hex: "#f59e0b" },
+  { id: "purple",  hex: "#9b5ff8" },
+  { id: "default", hex: "#555566" },
+];
+const AVATAR_SHAPE_OPTIONS = [
+  { id: "circle",  name: "Circle" },
+  { id: "rounded", name: "Rounded" },
+  { id: "square",  name: "Square" },
 ];
 const THEME_OPTIONS = [
   { id: "sunset", name: "Sunset Pop", desc: "Warm paper, bold coral accents." },
@@ -47,10 +52,12 @@ const DEFAULT_PROFILE = {
   discord_id: "",
   theme_mode: "light",
   show_spotify_status: false,
+  show_discord_card: true,
   appearance: {
     theme_id: "sunset",
     background_style: "grid",
     card_style: "soft",
+    avatar_shape: "circle",
   },
   socials: {},
   links: [],
@@ -65,10 +72,12 @@ function toEditableProfile(profile) {
     discord_id: profile.discord_id || "",
     theme_mode: profile.theme_mode === "dark" ? "dark" : "light",
     show_spotify_status: Boolean(profile.show_spotify_status),
+    show_discord_card: profile.show_discord_card !== false,
     appearance: {
       theme_id: appearance.theme_id || "sunset",
       background_style: appearance.background_style || "grid",
       card_style: appearance.card_style || "soft",
+      avatar_shape: appearance.avatar_shape || "circle",
     },
     socials: profile.socials || {},
     links: profile.links || [],
@@ -356,18 +365,36 @@ export default function Builder({ onLoggedOut }) {
                       <textarea rows={3} value={profile.bio} onChange={setField("bio")} placeholder="A short description about yourself" />
                     </div>
                     <div className="field">
-                      <label>Discord ID</label>
+                      <label>Discord ID <span style={{ fontWeight: 400, opacity: .6, fontSize: ".8em" }}>(required for Spotify status)</span></label>
                       <input type="text" value={profile.discord_id} onChange={setField("discord_id")} placeholder="835584835443228702" />
                     </div>
                     <p className="builder-inline-help">
-                      Join the <a href="https://discord.gg/lanyard" target="_blank" rel="noreferrer">Lanyard Discord</a> if you want Discord presence and Spotify listening status to render consistently.
+                      Join the <a href="https://discord.gg/lanyard" target="_blank" rel="noreferrer">Lanyard Discord</a> to enable live Spotify and Discord presence. Your ID is never shown publicly.
                     </p>
+                    <div className="status-option-card">
+                      <div className="social-toggle-row">
+                        <div>
+                          <div className="social-toggle-label">Show Discord presence card</div>
+                          <div className="status-option-copy">
+                            Display the Lanyard widget showing your Discord status on your profile.
+                          </div>
+                        </div>
+                        <label className="toggle-switch">
+                          <input
+                            type="checkbox"
+                            checked={profile.show_discord_card}
+                            onChange={(e) => setProfile((p) => ({ ...p, show_discord_card: e.target.checked }))}
+                          />
+                          <span className="toggle-track" />
+                        </label>
+                      </div>
+                    </div>
                     <div className="status-option-card">
                       <div className="social-toggle-row">
                         <div>
                           <div className="social-toggle-label">Show live Spotify status</div>
                           <div className="status-option-copy">
-                            Requires your Discord ID above. Shows your current track via Lanyard.
+                            Shows your current track via Lanyard. Requires your Discord ID above.
                           </div>
                         </div>
                         <label className="toggle-switch">
@@ -513,7 +540,24 @@ export default function Builder({ onLoggedOut }) {
                         </button>
                       ))}
                     </div>
+                  </div>
+                </div>
 
+                <div className="builder-section">
+                  <div className="builder-section-head">Avatar shape</div>
+                  <div className="builder-section-body">
+                    <div className="option-pill-grid">
+                      {AVATAR_SHAPE_OPTIONS.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          className={`option-pill${profile.appearance.avatar_shape === item.id ? " active" : ""}`}
+                          onClick={() => setAppearance("avatar_shape", item.id)}
+                        >
+                          {item.name}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </>

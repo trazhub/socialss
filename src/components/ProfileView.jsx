@@ -157,6 +157,7 @@ export default function ProfileView({ profile, isPreview = false }) {
     avatar_url = "",
     discord_id = "",
     show_spotify_status = false,
+    show_discord_card = true,
     socials = {},
     links = [],
     username = "",
@@ -167,6 +168,7 @@ export default function ProfileView({ profile, isPreview = false }) {
     theme_id: appearance.theme_id || "sunset",
     background_style: appearance.background_style || "grid",
     card_style: appearance.card_style || "soft",
+    avatar_shape: appearance.avatar_shape || "circle",
   };
 
   const activeSocials = Object.entries(socials)
@@ -226,7 +228,7 @@ export default function ProfileView({ profile, isPreview = false }) {
     };
   }, [discord_id, show_spotify_status]);
 
-  const spotifyPreviewState = show_spotify_status && isPreview
+  const spotifyPreviewState = show_spotify_status && discord_id && isPreview
     ? {
         song: "Your current song",
         artist: "Spotify updates live",
@@ -245,7 +247,7 @@ export default function ProfileView({ profile, isPreview = false }) {
       style={themeStyle}
     >
       <div className="profile-card" ref={cardRef}>
-        <div className="avatar-wrap">
+        <div className={`avatar-wrap avatar-${appearanceConfig.avatar_shape}`}>
           {avatar_url ? (
             <img src={avatar_url} alt={display_name || username} className="avatar" />
           ) : (
@@ -256,7 +258,7 @@ export default function ProfileView({ profile, isPreview = false }) {
         <p className="hand-name">{display_name || username || "Your name"}</p>
         <p className="profile-copy">{bio || "Your bio goes here."}</p>
 
-        {discord_id && (
+        {discord_id && show_discord_card && (
           <a
             className="lanyard-card"
             href={`https://discord.com/users/${discord_id}`}

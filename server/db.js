@@ -57,6 +57,11 @@ if (!profileColumns.some((column) => column.name === "appearance")) {
   db.exec("ALTER TABLE profiles ADD COLUMN appearance TEXT DEFAULT '{}'");
 }
 
+const profileCols2 = db.prepare("PRAGMA table_info(profiles)").all();
+if (!profileCols2.some(c => c.name === "show_discord_card")) {
+  db.exec("ALTER TABLE profiles ADD COLUMN show_discord_card INTEGER NOT NULL DEFAULT 1");
+}
+
 const userColumns = db.prepare("PRAGMA table_info(users)").all();
 if (!userColumns.some(c => c.name === "token_version")) {
   db.exec("ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0");

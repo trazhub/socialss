@@ -663,6 +663,12 @@ svg {
   font-size: .85rem; font-weight: 600;
 }
 
+/* Avatar shape variants */
+.avatar-wrap.avatar-rounded .avatar,
+.avatar-wrap.avatar-rounded .avatar-placeholder { border-radius: 18px; }
+.avatar-wrap.avatar-square .avatar,
+.avatar-wrap.avatar-square .avatar-placeholder { border-radius: 6px; }
+
 .hand-name {
   margin: 20px 0 0;
   color: var(--profile-ink, #fff);
