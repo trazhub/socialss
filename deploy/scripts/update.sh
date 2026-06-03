@@ -9,7 +9,8 @@ SERVICE="trazlinks"
 
 echo "[update] Pulling latest code..."
 cd "$APP_DIR"
-git pull origin main
+git fetch origin main
+git reset --hard origin/main
 
 echo "[update] Installing dependencies..."
 npm ci --omit=dev
