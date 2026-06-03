@@ -68,4 +68,9 @@ if (!userColumns.some(c => c.name === "locked_until")) {
   db.exec("ALTER TABLE users ADD COLUMN locked_until TEXT DEFAULT NULL");
 }
 
+const profileCols = db.prepare("PRAGMA table_info(profiles)").all();
+if (!profileCols.some(c => c.name === "spotify_style")) {
+  db.exec("ALTER TABLE profiles ADD COLUMN spotify_style TEXT NOT NULL DEFAULT 'card'");
+}
+
 export default db;

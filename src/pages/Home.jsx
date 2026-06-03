@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import ThreeBackground from "../components/ThreeBackground";
 
 const FEATURE_ICONS = {
   links: (
@@ -9,36 +10,39 @@ const FEATURE_ICONS = {
   ),
   status: (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M13 2 4 14h7l-1 8 10-13h-7l1-7z" />
+      <circle cx="12" cy="12" r="9" />
+      <path d="M8 12h4l2-4 2 8 2-4h2" />
     </svg>
   ),
   edit: (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+      <path d="M4 20h16" />
+      <path d="M6 16V8" />
+      <path d="M12 16V4" />
+      <path d="M18 16v-6" />
     </svg>
   ),
   share: (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
-      <path d="M16 6 12 2 8 6" />
-      <path d="M12 2v14" />
+      <path d="M12 3v12" />
+      <path d="m7 8 5-5 5 5" />
+      <path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" />
     </svg>
   ),
 };
 
 const FEATURES = [
-  ["links", "All your socials", "GitHub, Instagram, YouTube, Spotify, Steam, Discord and more"],
-  ["status", "Live Discord status", "Powered by Lanyard, with activity shown in real time"],
-  ["edit", "Live preview builder", "See changes instantly as you type, then save when ready"],
-  ["share", "One link, everywhere", "Share one URL in every bio across your platforms"],
+  ["links", "Everything in one place", "Socials, projects, music, contact links, and anything you want to ship."],
+  ["status", "Live presence", "Discord and Spotify context through Lanyard, tuned for a clean public profile."],
+  ["edit", "Fast builder", "Edit content, preview the page, and publish without fighting a bloated dashboard."],
+  ["share", "One URL", "Use your TrazLinks page across every bio, profile, README, and launch."],
 ];
 
 export default function Home({ session }) {
   return (
     <div className="home-root">
+      <ThreeBackground />
 
-      {/* Nav */}
       <header className="home-nav">
         <span className="brand-pill" style={{ pointerEvents: "none" }}>
           <span className="brand-mark">TL</span>
@@ -46,46 +50,44 @@ export default function Home({ session }) {
         </span>
         <div className="home-actions">
           {session ? (
-            <Link to="/builder" className="btn btn-green btn-sm">Open builder</Link>
+            <Link to="/builder" className="btn btn-primary btn-sm">Open builder</Link>
           ) : (
             <>
               <Link to="/auth" className="btn btn-sm nav-signin">Sign in</Link>
-              <Link to="/auth" className="btn btn-yellow btn-sm nav-primary">Get started</Link>
+              <Link to="/auth" className="btn btn-primary btn-sm nav-primary">Create free</Link>
             </>
           )}
         </div>
       </header>
 
-      {/* Hero */}
       <section className="home-hero">
         <div className="home-hero-left">
           <div className="home-eyebrow">
-            <span className="home-badge">Free - No installs - By TrazHub</span>
+            <span className="home-badge">Free / private dashboard / public link page</span>
           </div>
 
           <h1 className="home-headline">
-            One link for<br />
-            <span className="home-headline-accent">everything you do.</span>
+            One link for everything.
           </h1>
 
           <p className="home-desc">
-            Build a beautiful, animated link page in minutes.
-            One URL to share everywhere with all your socials, projects, and content.
+            A minimal link-in-bio page for creators who want their work, socials,
+            Discord presence, and currently playing music in one calm place.
           </p>
 
           <div className="home-cta">
             {session ? (
-              <Link to="/builder" className="btn btn-green">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+              <Link to="/builder" className="btn btn-primary">
                 Open my builder
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
               </Link>
             ) : (
               <>
-                <Link to="/auth" className="btn btn-yellow">
-                  Create your page - free
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                <Link to="/auth" className="btn btn-primary">
+                  Create your page — free
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
                 </Link>
-                <Link to="/auth" className="btn">Sign in</Link>
+                <Link to="/auth" className="btn btn-outline">Sign in</Link>
               </>
             )}
           </div>
@@ -104,7 +106,6 @@ export default function Home({ session }) {
         </div>
       </section>
 
-      {/* Made by credit */}
       <footer className="home-footer">
         <div className="home-footer-inner">
           <div className="home-made-by">
@@ -113,8 +114,9 @@ export default function Home({ session }) {
               <img
                 src="https://avatars.githubusercontent.com/trazhub"
                 alt="Garv / TrazHub"
-                width={24} height={24}
-                style={{ borderRadius: 4, border: "2px solid var(--ink)", display: "block" }}
+                width={24}
+                height={24}
+                style={{ borderRadius: 4, border: "1px solid var(--border-strong)", display: "block" }}
               />
               <strong>Garv</strong>
               <span style={{ opacity: .55 }}>/ TrazHub</span>
@@ -130,6 +132,7 @@ export default function Home({ session }) {
 
           <div className="home-legal-links">
             <Link to="/privacy">Privacy</Link>
+            <span className="credit-dot">/</span>
             <Link to="/terms">Terms</Link>
           </div>
         </div>

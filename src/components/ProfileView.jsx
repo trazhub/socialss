@@ -157,6 +157,7 @@ export default function ProfileView({ profile, isPreview = false }) {
     avatar_url = "",
     discord_id = "",
     show_spotify_status = false,
+    spotify_style = "card",
     socials = {},
     links = [],
     username = "",
@@ -236,7 +237,9 @@ export default function ProfileView({ profile, isPreview = false }) {
       }
     : null;
 
-  const liveSpotify = spotifyState || spotifyPreviewState;
+  const liveSpotify = (show_spotify_status && spotify_style !== "off") ? (spotifyState || spotifyPreviewState) : null;
+  const shouldRenderSpotifyCard = liveSpotify && (spotify_style || "card") === "card";
+  const shouldRenderSpotifyMinimal = liveSpotify && spotify_style === "minimal";
   const themeStyle = APPEARANCE_THEMES[appearanceConfig.theme_id] || APPEARANCE_THEMES.sunset;
 
   return (
@@ -273,7 +276,11 @@ export default function ProfileView({ profile, isPreview = false }) {
           </a>
         )}
 
-        {liveSpotify && (
+        {shouldRenderSpotifyMinimal && (
+          <p className="spotify-minimal">🎵 {liveSpotify.song} — {liveSpotify.artist}</p>
+        )}
+
+        {shouldRenderSpotifyCard && (
           <a
             className={`spotify-status-card${liveSpotify.trackUrl ? "" : " is-static"}`}
             href={liveSpotify.trackUrl || undefined}

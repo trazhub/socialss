@@ -47,6 +47,7 @@ const DEFAULT_PROFILE = {
   discord_id: "",
   theme_mode: "light",
   show_spotify_status: false,
+  spotify_style: "card",
   appearance: {
     theme_id: "sunset",
     background_style: "grid",
@@ -65,6 +66,7 @@ function toEditableProfile(profile) {
     discord_id: profile.discord_id || "",
     theme_mode: profile.theme_mode === "dark" ? "dark" : "light",
     show_spotify_status: Boolean(profile.show_spotify_status),
+    spotify_style: ["card", "minimal", "off"].includes(profile.spotify_style) ? profile.spotify_style : "card",
     appearance: {
       theme_id: appearance.theme_id || "sunset",
       background_style: appearance.background_style || "grid",
@@ -379,6 +381,30 @@ export default function Builder({ onLoggedOut }) {
                           <span className="toggle-track" />
                         </label>
                       </div>
+
+                      {profile.show_spotify_status && (
+                        <div className="spotify-style-control">
+                          <div className="social-toggle-label">Spotify display style</div>
+                          <div className="option-pill-grid spotify-style-options" role="radiogroup" aria-label="Spotify display style">
+                            {[
+                              ["card", "Card"],
+                              ["minimal", "Minimal"],
+                              ["off", "Off"],
+                            ].map(([value, label]) => (
+                              <button
+                                key={value}
+                                type="button"
+                                role="radio"
+                                aria-checked={profile.spotify_style === value}
+                                className={`option-pill${profile.spotify_style === value ? " active" : ""}`}
+                                onClick={() => setProfile((p) => ({ ...p, spotify_style: value }))}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
