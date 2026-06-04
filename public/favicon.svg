@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="TrazLinks">
-  <rect width="64" height="64" rx="14" fill="#fff1f2"/>
-  <rect x="6" y="6" width="52" height="52" rx="12" fill="#f59e0b" stroke="#111827" stroke-width="4"/>
-  <rect x="16" y="16" width="32" height="32" rx="8" fill="#111827"/>
-  <path d="M23 24h18v5h-6.5v15h-5V29H23z" fill="#fffdf8"/>
-  <path d="M23 34h5v10h13v-5H28v-5z" fill="#fffdf8"/>
-  <path d="M44 11h4.5v7H56v4.5H44z" fill="#e11d48"/>
-</svg>
