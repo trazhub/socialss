@@ -32,9 +32,7 @@
       <span class="page-eyebrow">Projects</span>
       <h1>Selected work</h1>
       <p>
-        A mix of shipped things and experiments. Replace the placeholder cards below with your
-        own projects — duplicate a <code>.project-card</code> block in
-        <code>projects.html</code> for each one.
+        A mix of shipped things and experiments.
       </p>
     </section>
 
@@ -61,54 +59,72 @@
           </div>
         </article>
 
-        <!-- Edit or duplicate this card to add a real project -->
         <article class="project-card">
           <div class="project-card-top">
-            <span class="project-status is-placeholder">Add project</span>
+            <span class="project-status">Live</span>
           </div>
-          <h3>[Project name]</h3>
-          <p>[Add a short description: what it does, the problem it solves, and your role in it.]</p>
+          <h3>VoxelPort — Minecraft Server Tunneling</h3>
+          <p>
+            Host a Fabric server — or an Open-to-LAN singleplayer world — over the internet with
+            zero port forwarding. The mod opens an outbound encrypted WebSocket to VoxelPort's
+            relay, which hands back a public address that vanilla players can join directly, no
+            mod required on their end. Built the Fabric mod, the relay, the website, and a
+            cross-platform Electron desktop app.
+          </p>
           <div class="project-tags">
-            <span>[tag]</span>
-            <span>[tag]</span>
+            <span>Java</span>
+            <span>Fabric</span>
+            <span>WebSockets</span>
+            <span>React</span>
+            <span>Electron</span>
           </div>
           <div class="project-links">
-            <a href="#">Live</a>
-            <a href="#">Source</a>
+            <a href="https://www.voxelport.in" target="_blank" rel="noreferrer">Live</a>
+            <a href="https://github.com/VOXELPORT/VoxelPort" target="_blank" rel="noreferrer">Source</a>
           </div>
         </article>
 
-        <!-- Edit or duplicate this card to add a real project -->
         <article class="project-card">
           <div class="project-card-top">
-            <span class="project-status is-placeholder">Add project</span>
+            <span class="project-status">Shipped — v1.1.0</span>
           </div>
-          <h3>[Project name]</h3>
-          <p>[Add a short description: what it does, the problem it solves, and your role in it.]</p>
+          <h3>WaypointsLite — PaperMC Plugin</h3>
+          <p>
+            A lightweight Minecraft server plugin giving non-OP players teleport requests with a
+            click-through accept/deny GUI, personal waypoints
+            (<code>/waypoint set|go|list|delete</code>), and toggleable live server stats in the
+            sidebar. Built for servers that don't want to hand out full essentials-style
+            permissions just to let players teleport to each other.
+          </p>
           <div class="project-tags">
-            <span>[tag]</span>
-            <span>[tag]</span>
+            <span>Java</span>
+            <span>PaperMC / Spigot API</span>
+            <span>Maven</span>
           </div>
           <div class="project-links">
-            <a href="#">Live</a>
-            <a href="#">Source</a>
+            <a href="https://github.com/trazhub/waypointslite-fabric" target="_blank" rel="noreferrer">Source</a>
           </div>
         </article>
 
-        <!-- Edit or duplicate this card to add a real project -->
         <article class="project-card">
           <div class="project-card-top">
-            <span class="project-status is-placeholder">Add project</span>
+            <span class="project-status">Shipped — v1.0.0</span>
           </div>
-          <h3>[Project name]</h3>
-          <p>[Add a short description: what it does, the problem it solves, and your role in it.]</p>
+          <h3>XPMerger — PaperMC Plugin</h3>
+          <p>
+            A performance plugin that merges nearby XP orbs into bigger clumps to cut down on
+            entity lag from wither farms and mob grinders. Runs two strategies together: an
+            instant merge on <code>ExperienceOrbSpawnEvent</code> that catches burst drops before
+            they ever tick, and a periodic sweep that buckets orbs into a spatial grid so it only
+            compares nearby orbs instead of checking every orb against every other one.
+          </p>
           <div class="project-tags">
-            <span>[tag]</span>
-            <span>[tag]</span>
+            <span>Java</span>
+            <span>PaperMC / Spigot API</span>
+            <span>Maven</span>
           </div>
           <div class="project-links">
-            <a href="#">Live</a>
-            <a href="#">Source</a>
+            <a href="https://github.com/trazhub/xpmerger" target="_blank" rel="noreferrer">Source</a>
           </div>
         </article>
       </div>
