@@ -162,6 +162,44 @@ $$("[data-drag]").forEach((el) => {
   el.addEventListener("pointercancel", drop);
 });
 
+/* ------------------------------------------------------------------ Instagram reels (official embeds, loaded when near) */
+
+// To show a newer post, copy its code from the URL (instagram.com/reel/THIS_PART/) into a figure with data-ig in index.html.
+const reelsBox = $("#reels");
+if (reelsBox) {
+  whenVisible(reelsBox, () => {
+    $$(".reel", reelsBox).forEach((fig) => {
+      const frame = $(".reel-frame", fig);
+      const code = fig.dataset.ig;
+      if (!frame || !code) return;
+      const iframe = document.createElement("iframe");
+      iframe.src = `https://www.instagram.com/reel/${code}/embed/`;
+      iframe.title = `Instagram video: ${$(".hand", fig)?.textContent || code}`;
+      iframe.loading = "lazy";
+      iframe.allowFullscreen = true;
+      iframe.setAttribute("scrolling", "no");
+      iframe.setAttribute("allow", "encrypted-media; fullscreen; picture-in-picture");
+      frame.append(iframe);
+    });
+  }, "300px");
+
+  // Instagram's player reports its real height, so each frame fits its video with no blank space.
+  window.addEventListener("message", (e) => {
+    if (e.origin !== "https://www.instagram.com") return;
+    let data = e.data;
+    try {
+      if (typeof data === "string") data = JSON.parse(data);
+    } catch {
+      return;
+    }
+    const height = data?.type === "MEASURE" ? Number(data.details?.height) : 0;
+    if (!height) return;
+    $$("iframe", reelsBox).forEach((f) => {
+      if (f.contentWindow === e.source) f.parentElement.style.height = `${Math.round(height)}px`;
+    });
+  });
+}
+
 /* ------------------------------------------------------------------ share + spark */
 
 async function copyPageLink() {
