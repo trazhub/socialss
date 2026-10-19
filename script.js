@@ -1,11 +1,8 @@
-import { FlowField, ART_STYLES, drawPiece } from "./art.js";
-
 const USER_ID = "835584835443228702";
 const LANYARD_REST_URL = `https://api.lanyard.rest/v1/users/${USER_ID}`;
 const LANYARD_SOCKET_URL = "wss://api.lanyard.rest/socket";
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
@@ -105,188 +102,64 @@ if ("IntersectionObserver" in window && !reduceMotion) {
   $$(".reveal").forEach((el) => el.classList.add("is-in"));
 }
 
-/* ------------------------------------------------------------------ cursor ring */
+/* ------------------------------------------------------------------ pixel stickers (drawn from text grids) */
 
-const cursor = $("#cursor");
-if (cursor && finePointer && !reduceMotion) {
-  let x = -100;
-  let y = -100;
-  let cx = x;
-  let cy = y;
-  window.addEventListener("pointermove", (e) => {
-    x = e.clientX;
-    y = e.clientY;
-    cursor.classList.add("is-on");
+const PIXELS = {
+  heart: {
+    pal: { X: "#d9432b", o: "#ff9b86", k: "#7e1f10" },
+    grid: [".kk...kk.", "kXXk.kXXk", "kXoXkXXXk", "kXXXXXXXk", ".kXXXXXk.", "..kXXXk..", "...kXk...", "....k...."],
+  },
+  pickaxe: {
+    pal: { G: "#8e949c", g: "#c9ced4", B: "#8a5a2b", b: "#b07a3e", k: "#2b2b2b" },
+    grid: ["..kkkkkkk..", ".kGggggggGk.", "kGGkkbBkkGGk", "kGk..bB..kGk", "kk...bB...kk", ".....bB.....", ".....bB.....", ".....bB.....", ".....bB.....", ".....kk....."],
+  },
+  block: {
+    pal: { G: "#5cae45", g: "#7ccb5e", D: "#8a5a35", d: "#6f4526", k: "#2b2b2b" },
+    grid: ["kkkkkkkkkk", "kGgGGgGGgk", "kGGgGGGgGk", "kgGGGgGGGk", "kDdDDDdDDk", "kDDDdDDDdk", "kdDDDDdDDk", "kDDdDDDDDk", "kDDDDdDdDk", "kkkkkkkkkk"],
+  },
+  gem: {
+    pal: { C: "#35c8e0", c: "#b5f3fb", B: "#1f8fa8", k: "#17566a" },
+    grid: ["...kkkkk...", "..kcCCCCk..", ".kcCCCCCCk.", "kcCCCCCCCBk", "kCCCCCCCBBk", ".kCCCCCBBk.", "..kCCCBBk..", "...kCBBk...", "....kBk...."],
+  },
+};
+
+$$("[data-pix]").forEach((el) => {
+  const def = PIXELS[el.dataset.pix];
+  if (!def) return;
+  const rows = def.grid;
+  const w = Math.max(...rows.map((r) => r.length));
+  let rects = "";
+  rows.forEach((row, y) => {
+    [...row].forEach((ch, x) => {
+      if (ch !== "." && def.pal[ch]) rects += `<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${def.pal[ch]}"/>`;
+    });
   });
-  document.addEventListener("pointerleave", () => cursor.classList.remove("is-on"));
-  document.addEventListener("pointerover", (e) => {
-    cursor.classList.toggle("is-hover", Boolean(e.target instanceof Element && e.target.closest("a, button, .tile-art")));
-  });
-  const follow = () => {
-    cx += (x - cx) * 0.2;
-    cy += (y - cy) * 0.2;
-    cursor.style.transform = `translate(${cx}px, ${cy}px)`;
-    requestAnimationFrame(follow);
-  };
-  follow();
-}
-
-/* ------------------------------------------------------------------ hero: a living flow field */
-
-const heroCanvas = $("#heroArt");
-const hero = $(".hero");
-let flow;
-let heroSeed = Math.floor(Math.random() * 1e6);
-
-function startHero() {
-  if (!heroCanvas) return;
-  const area = heroCanvas.clientWidth * heroCanvas.clientHeight;
-  const count = Math.max(380, Math.min(1100, Math.round(area / 2100)));
-  flow = new FlowField(heroCanvas, { seed: heroSeed, count });
-  if (reduceMotion) {
-    flow.paintStill(320);
-    return;
-  }
-  flow.start();
-  hero?.addEventListener("pointermove", (e) => {
-    const r = heroCanvas.getBoundingClientRect();
-    flow.pointer.x = e.clientX - r.left;
-    flow.pointer.y = e.clientY - r.top;
-    flow.pointer.active = true;
-  });
-  hero?.addEventListener("pointerleave", () => { flow.pointer.active = false; });
-  if ("IntersectionObserver" in window) {
-    new IntersectionObserver((entries) => {
-      const on = entries.some((e) => e.isIntersecting) && document.visibilityState === "visible";
-      if (on) flow.start();
-      else flow.stop();
-    }).observe(hero);
-  }
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") flow.start();
-    else flow.stop();
-  });
-}
-startHero();
-
-window.addEventListener("resize", debounce(() => {
-  if (!flow) return;
-  flow.reseed(heroSeed);
-  if (reduceMotion) flow.paintStill(320);
-}, 250));
-
-$("#regen")?.addEventListener("click", () => {
-  heroSeed = Math.floor(Math.random() * 1e6);
-  if (flow) {
-    flow.reseed(heroSeed);
-    if (reduceMotion) flow.paintStill(320);
-  }
+  el.innerHTML = `<svg viewBox="0 0 ${w} ${rows.length}" shape-rendering="crispEdges" role="presentation">${rects}</svg>`;
 });
 
-/* ------------------------------------------------------------------ rotating word */
+/* ------------------------------------------------------------------ draggable stickers */
 
-const wordEl = $("#word");
-if (wordEl && !reduceMotion) {
-  const words = (wordEl.dataset.words || "").split(",").map((w) => w.trim()).filter(Boolean);
-  const glyphs = "abcdefghijklmnopqrstuvwxyz0123456789#<>/";
-  let i = 0;
-  const swap = (to) => {
-    const from = wordEl.textContent || "";
-    const len = Math.max(from.length, to.length);
-    let frame = 0;
-    const total = 14;
-    const timer = setInterval(() => {
-      frame += 1;
-      const keep = Math.floor((frame / total) * len);
-      let out = "";
-      for (let k = 0; k < len; k += 1) {
-        if (k < keep) out += to[k] ?? "";
-        else out += glyphs[Math.floor(Math.random() * glyphs.length)];
-      }
-      wordEl.textContent = out;
-      if (frame >= total) {
-        clearInterval(timer);
-        wordEl.textContent = to;
-      }
-    }, 38);
-  };
-  setInterval(() => {
-    i = (i + 1) % words.length;
-    swap(words[i]);
-  }, 2600);
-}
-
-/* ------------------------------------------------------------------ generative gallery and card art */
-
-// To show your own pieces, add { src: "./assets/art/name.jpg", alt: "...", title: "..." } here:
-// an entry with a src is shown as a picture instead of a generated sketch.
-const ART_PIECES = [
-  { style: 0, seed: 11 },
-  { style: 1, seed: 23 },
-  { style: 2, seed: 37 },
-  { style: 3, seed: 52 },
-  { style: 4, seed: 64 },
-  { style: 5, seed: 78 },
-];
-
-const gallery = $("#gallery");
-if (gallery) {
-  ART_PIECES.forEach((piece, idx) => {
-    const fig = document.createElement("figure");
-    fig.className = "tile-art";
-    if (piece.src) {
-      const img = document.createElement("img");
-      img.src = piece.src;
-      img.alt = piece.alt || piece.title || "Artwork";
-      img.loading = "lazy";
-      fig.append(img);
-      const cap = document.createElement("figcaption");
-      cap.textContent = piece.title || "Artwork";
-      fig.append(cap);
-      gallery.append(fig);
-      return;
-    }
-    const style = ART_STYLES[piece.style % ART_STYLES.length];
-    fig.tabIndex = 0;
-    fig.setAttribute("role", "button");
-    fig.setAttribute("aria-label", `${style.name}: generated artwork. Press to remix.`);
-    const canvas = document.createElement("canvas");
-    canvas.style.width = "100%";
-    canvas.style.height = "100%";
-    const cap = document.createElement("figcaption");
-    cap.textContent = style.name;
-    const remix = document.createElement("span");
-    remix.className = "remix";
-    remix.textContent = "click to remix ↻";
-    fig.append(canvas, cap, remix);
-    gallery.append(fig);
-
-    let seed = piece.seed;
-    const paint = () => drawPiece(canvas, piece.style, seed);
-    const remixIt = () => {
-      seed = Math.floor(Math.random() * 1e6);
-      paint();
-    };
-    fig.addEventListener("click", remixIt);
-    fig.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        remixIt();
-      }
-    });
-    whenVisible(fig, paint);
-    window.addEventListener("resize", debounce(() => { if (canvas.width) paint(); }, 300));
-    void idx;
+$$("[data-drag]").forEach((el) => {
+  let startX = 0;
+  let startY = 0;
+  let baseX = 0;
+  let baseY = 0;
+  el.addEventListener("pointerdown", (e) => {
+    startX = e.clientX;
+    startY = e.clientY;
+    baseX = parseFloat(el.style.getPropertyValue("--x")) || 0;
+    baseY = parseFloat(el.style.getPropertyValue("--y")) || 0;
+    el.setPointerCapture(e.pointerId);
+    el.classList.add("is-dragging");
   });
-}
-
-$$("[data-art]").forEach((box, i) => {
-  const canvas = $("canvas", box);
-  if (!canvas) return;
-  const style = Number(box.dataset.art) || 0;
-  const seed = Number(box.dataset.seed) || 101 + i * 17;
-  whenVisible(box, () => drawPiece(canvas, style, seed));
-  window.addEventListener("resize", debounce(() => { if (canvas.width) drawPiece(canvas, style, seed); }, 300));
+  el.addEventListener("pointermove", (e) => {
+    if (!el.classList.contains("is-dragging")) return;
+    el.style.setProperty("--x", baseX + e.clientX - startX + "px");
+    el.style.setProperty("--y", baseY + e.clientY - startY + "px");
+  });
+  const drop = () => el.classList.remove("is-dragging");
+  el.addEventListener("pointerup", drop);
+  el.addEventListener("pointercancel", drop);
 });
 
 /* ------------------------------------------------------------------ share + spark */
@@ -331,7 +204,7 @@ function createSpark(x, y) {
 }
 document.addEventListener("pointerdown", (event) => {
   const target = event.target;
-  if (target instanceof Element && target.closest(".btn, .tile-art, .link-btn")) createSpark(event.clientX, event.clientY);
+  if (target instanceof Element && target.closest(".btn, .link-btn")) createSpark(event.clientX, event.clientY);
 });
 
 /* ------------------------------------------------------------------ live presence (Lanyard) */
